@@ -1,0 +1,38 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2026-02-01T16:00:00Z",
+    "data": {
+      "event": "otc-deal-proposed",
+      "buyer": "trader-alice",
+      "seller": "trader-bob",
+      "asset": "BTC",
+      "amount": 5.0,
+      "price_usd": 95000
+    },
+    "prev_hash": null,
+    "hash": "__computed__"
+  },
+  {
+    "index": 1,
+    "timestamp": "2026-02-01T16:10:00Z",
+    "data": {
+      "event": "deal-accepted",
+      "accepted_by": "trader-bob",
+      "final_price_usd": 95000
+    },
+    "prev_hash": "__prev__",
+    "hash": "__computed__"
+  },
+  {
+    "index": 2,
+    "timestamp": "2026-02-01T16:30:00Z",
+    "data": {
+      "event": "settlement-confirmed",
+      "btc_txid": "abc123def456",
+      "fiat_reference": "wire-TXN-9001"
+    },
+    "prev_hash": "__prev__",
+    "hash": "__computed__"
+  }
+]

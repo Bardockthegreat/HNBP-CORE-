@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HNBP-CORE Verifier</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<style>
+  body { background: #0d1117; color: #e6edf3; font-family: 'Courier New', monospace; }
+  .gold { color: #f0c040; }
+  .drop-active { border-color: #f0c040 !important; background: #1a1f2e !important; }
+  .truncate-hash { font-size: 0.7rem; word-break: break-all; }
+  details summary { cursor: pointer; }
+  .fade-in { animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  table { border-collapse: collapse; }
+  td, th { padding: 6px 10px; border-bottom: 1px solid #21262d; }
+  th { background: #161b22; color: #8b949e; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  tr:hover td { background: #161b22; }
+  .badge-valid { background: #0d3321; color: #3fb950; border: 1px solid #238636; }
+  .badge-invalid { background: #3d1215; color: #f85149; border: 1px solid #da3633; }
+  pre { white-space: pre-wrap; word-break: break-all; }
+</style>
+</head>
+<body class="min-h-screen p-6">
+
+<div class="max-w-5xl mx-auto space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-baseline gap-3">
+    <h1 class="text-2xl font-bold gold">HNBP-CORE</h1>
+    <span class="text-gray-400 text-sm">v1.0.0 Reference Verifier</span>
+  </div>
+  <p class="text-gray-400 text-sm">Tamper-evident witness log verifier for humans, AI agents, and systems. Runs entirely in your browser — no server, no uploads.</p>
+
+  <!-- Drop Zone -->
+  <div id="dropzone"
+    class="border-2 border-dashed border-gray-600 rounded-lg p-10 text-center cursor-pointer transition-all hover:border-yellow-400"
+    ondragover="event.preventDefault(); this.classList.add('drop-active')"
+    ondragleave="this.classList.remove('drop-active')"
+    ondrop="handleDrop(event)">
+    <div class="text-gray-400 mb-2">Drop a <span class="gold">.morus</span> or <span class="gold">.json</span> file here</div>
+    <label class="cursor-pointer text-sm text-yellow-400 hover:underline">
+      or click to pick a file
+      <input type="file" class="hidden" accept=".json,.morus" onchange="handleFile(this.files[0])" />
+    </label>
+  </div>
+
+  <!-- Textarea -->
+  <div>
+    <label class="text-xs text-gray-500 uppercase tracking-widest">Paste JSON</label>
+    <textarea id="jsonInput" rows="6"
+      class="w-full mt-1 p-3 bg-gray-900 border border-gray-700 rounded text-sm text-green-300 focus:outline-none focus:border-yellow-400 font-mono"
+      placeholder='[{"index":0,"timestamp":"...","data":{...},"prev_hash":null,"hash":"..."}]'></textarea>
+  </div>
+
+  <!-- Buttons -->
+  <div class="flex flex-wrap gap-2">
+    <button onclick="verifyFromTextarea()" class="px-4 py-2 bg-yellow-500 text-black font-bold rounded hover:bg-yellow-400 transition">Verify Log</button>
+    <button onclick="loadValidExample()" class="px-3 py-2 border border-gray-600 rounded text-sm hover:border-yellow-400 transition">Load Valid Example</button>
+    <button onclick="loadTamperedExample()" class="px-3 py-2 border border-gray-600 rounded text-sm hover:border-red-500 transition">Load Tampered Example</button>
+    <button onclick="copyLogJSON()" class="px-3 py-2 border border-gray-600 rounded text-sm hover:border-yellow-400 transition">Copy Log JSON</button>
+    <button onclick="copyAsMarkdown()" class="px-3 py-2 border border-gray-600 rounded text-sm hover:border-yellow-400 transition">Copy as Markdown</button>
+    <button onclick="downloadVerified()" class="px-3 py-2 border border-gray-600 rounded text-sm hover:border-yellow-400 transition">Download Verified Log</button>
+    <button onclick="clearAll()" class="px-3 py-2 border border-gray-600 rounded text-sm hover:border-red-500 transition">Clear All</button>
+  </div>
+
+  <!-- Result Banner -->
+  <div id="resultBanner" class="hidden fade-in rounded-lg px-5 py-4 text-sm font-mono"></div>
+
+  <!-- Stats -->
+  <div id="stats" class="hidden text-gray-400 text-sm space-y-1"></div>
+
+  <!-- Table -->
+  <div id="tableContainer" class="hidden overflow-x-auto rounded-lg border border-gray-700">
+    <table class="w-full text-sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Timestamp</th>
+          <th>Data</th>
+          <th>prev_hash</th>
+          <th>hash</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div id="loadMore" class="hidden text-center py-3">
+      <button onclick="showMoreRows()" class="text-yellow-400 text-sm hover:underline">Load more rows</button>
+    </div>
+  </div>
+
+  <!-- About -->
+  <details class="border border-gray-700 rounded-lg">
+    <summary class="px-4 py-3 text-sm gold hover:bg-gray-900 rounded-lg">About HNBP-CORE</summary>
+    <div class="px-4 pb-4 pt-2 text-sm text-gray-300 space-y-3">
+      <p>HNBP-CORE is a universal, tamper-evident, append-only witness protocol for humans, AI agents, and systems — with optional Bitcoin anchoring.</p>
+      <div>
+        <div class="text-yellow-400 font-bold mb-1">Record Structure</div>
+        <pre class="bg-gray-900 rounded p-3 text-xs text-green-300">{
+  "index":     integer (0, 1, 2, ...),
+  "timestamp": ISO 8601 string,
+  "data":      any JSON-serializable value,
+  "prev_hash": hex string | null (index 0 only),
+  "hash":      SHA-256 hex digest
+}</pre>
+      </div>
+      <div>
+        <div class="text-yellow-400 font-bold mb-1">Hashing Rule</div>
+        <pre class="bg-gray-900 rounded p-3 text-xs text-green-300">hash = SHA256(
+  String(index) +
+  String(timestamp) +
+  JSON.stringify(data, sorted_keys) +
+  String(prev_hash)   // "null" for index 0
+)</pre>
+      </div>
+      <div>
+        <div class="text-yellow-400 font-bold mb-1">Validity Rules</div>
+        <ul class="list-disc list-inside text-xs space-y-1 text-gray-400">
+          <li>Non-empty JSON array</li>
+          <li>Indices exactly sequential: 0..n</li>
+          <li>records[0].prev_hash === null</li>
+          <li>records[i].prev_hash === records[i-1].hash for i &gt; 0</li>
+          <li>Recomputed hash matches stored hash for every record</li>
+          <li>All timestamps are valid ISO 8601</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+  <!-- Footer -->
+  <div class="text-xs text-gray-600 text-center pt-2">
+    Built as a reference verifier for <a href="https://github.com/Bardockthegreat/hnbp-core" class="text-yellow-600 hover:text-yellow-400">HNBP-CORE</a>
+    &mdash; PolyForm Noncommercial 1.0.0
+  </div>
+
+</div>
+
+<script>
+// ---- Canonical JSON ----
+function canonicalJSON(data) {
+  if (data === null || typeof data !== 'object' || Array.isArray(data)) return JSON.stringify(data);
+  const keys = Object.keys(data).sort();
+  return '{' + keys.map(k => JSON.stringify(k) + ':' + canonicalJSON(data[k])).join(',') + '}';
+}
+
+// ---- SHA-256 via WebCrypto ----
+async function sha256hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function computeHash(index, timestamp, data, prevHash) {
+  const prevStr = prevHash === null ? 'null' : String(prevHash);
+  const raw = String(index) + String(timestamp) + canonicalJSON(data) + prevStr;
+  return sha256hex(raw);
+}
+
+// ---- Validation ----
+async function validateLog(records) {
+  if (!Array.isArray(records) || records.length === 0)
+    throw new Error('Log must be a non-empty JSON array');
+  for (let i = 0; i < records.length; i++) {
+    const rec = records[i];
+    for (const f of ['index','timestamp','data','prev_hash','hash']) {
+      if (!(f in rec)) throw new Error(`Record ${i}: missing field '${f}'`);
+    }
+    if (rec.index !== i) throw new Error(`Record ${i}: index mismatch (got ${rec.index})`);
+    if (isNaN(Date.parse(rec.timestamp))) throw new Error(`Record ${i}: invalid ISO 8601 timestamp`);
+    if (i === 0 && rec.prev_hash !== null) throw new Error('Record 0: prev_hash must be null');
+    if (i > 0 && rec.prev_hash !== records[i-1].hash)
+      throw new Error(`Record ${i}: prev_hash does not match record ${i-1} hash`);
+    const expected = await computeHash(rec.index, rec.timestamp, rec.data, rec.prev_hash);
+    if (rec.hash !== expected) throw new Error(`Record ${i}: hash mismatch\n  stored:   ${rec.hash}\n  computed: ${expected}`);
+  }
+}
+
+// ---- State ----
+let currentLog = null;
+let rowOffset = 0;
+const PAGE_SIZE = 100;
+
+// ---- UI ----
+function showBanner(ok, msg) {
+  const el = document.getElementById('resultBanner');
+  el.className = `fade-in rounded-lg px-5 py-4 text-sm font-mono ${ok ? 'badge-valid' : 'badge-invalid'}`;
+  el.textContent = ok ? `✔ Chain is intact and tamper-evident` : `❌ Verification failed: ${msg}`;
+  el.classList.remove('hidden');
+}
+
+function showStats(records) {
+  const el = document.getElementById('stats');
+  const first = records[0].timestamp;
+  const last = records[records.length-1].timestamp;
+  el.innerHTML = `<div>Total entries: <span class="text-yellow-400">${records.length}</span></div>
+    <div>Time span: <span class="text-yellow-400">${first}</span> → <span class="text-yellow-400">${last}</span></div>
+    <div>HEAD hash: <span class="text-green-400 text-xs">${records[records.length-1].hash}</span></div>`;
+  el.classList.remove('hidden');
+}
+
+function short(h) {
+  if (!h) return 'null';
+  return `<span title="${h}" class="truncate-hash text-gray-500">${h.slice(0,8)}…${h.slice(-4)}</span>`;
+}
+
+function dataPreview(data) {
+  const s = JSON.stringify(data);
+  if (s.length <= 60) return `<code class="text-xs text-blue-300">${escHtml(s)}</code>`;
+  return `<details><summary class="text-xs text-blue-300 cursor-pointer">${escHtml(s.slice(0,57))}…</summary>
+    <pre class="text-xs text-blue-200 mt-1">${escHtml(JSON.stringify(data, null, 2))}</pre></details>`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderRows(records, from, count) {
+  const tbody = document.getElementById('tableBody');
+  const slice = records.slice(from, from + count);
+  slice.forEach(rec => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="text-gray-500">${rec.index}</td>
+      <td class="text-xs text-gray-400 whitespace-nowrap">${escHtml(rec.timestamp)}</td>
+      <td>${dataPreview(rec.data)}</td>
+      <td>${short(rec.prev_hash)}</td>
+      <td>${short(rec.hash)}</td>`;
+    tbody.appendChild(tr);
+  });
+  rowOffset = from + slice.length;
+  const loadMore = document.getElementById('loadMore');
+  if (rowOffset < records.length) {
+    loadMore.classList.remove('hidden');
+  } else {
+    loadMore.classList.add('hidden');
+  }
+}
+
+function showMoreRows() {
+  if (currentLog) renderRows(currentLog, rowOffset, PAGE_SIZE);
+}
+
+function showTable(records) {
+  document.getElementById('tableBody').innerHTML = '';
+  rowOffset = 0;
+  document.getElementById('tableContainer').classList.remove('hidden');
+  renderRows(records, 0, PAGE_SIZE);
+}
+
+async function verify(records) {
+  try {
+    await validateLog(records);
+    currentLog = records;
+    showBanner(true);
+    showStats(records);
+    showTable(records);
+  } catch (e) {
+    showBanner(false, e.message);
+    document.getElementById('stats').classList.add('hidden');
+    document.getElementById('tableContainer').classList.add('hidden');
+    currentLog = null;
+  }
+}
+
+async function verifyFromTextarea() {
+  const raw = document.getElementById('jsonInput').value.trim();
+  if (!raw) return;
+  let records;
+  try { records = JSON.parse(raw); } catch (e) { showBanner(false, 'Invalid JSON: ' + e.message); return; }
+  await verify(records);
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.remove('drop-active');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+}
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = async e => {
+    document.getElementById('jsonInput').value = e.target.result;
+    let records;
+    try { records = JSON.parse(e.target.result); } catch (ex) { showBanner(false, 'Invalid JSON: ' + ex.message); return; }
+    await verify(records);
+  };
+  reader.readAsText(file);
+}
+
+function clearAll() {
+  document.getElementById('jsonInput').value = '';
+  document.getElementById('resultBanner').classList.add('hidden');
+  document.getElementById('stats').classList.add('hidden');
+  document.getElementById('tableContainer').classList.add('hidden');
+  document.getElementById('tableBody').innerHTML = '';
+  currentLog = null;
+}
+
+function copyLogJSON() {
+  const raw = document.getElementById('jsonInput').value.trim();
+  if (raw) navigator.clipboard.writeText(raw);
+}
+
+function copyAsMarkdown() {
+  if (!currentLog) return;
+  let md = '# HNBP-CORE Log\n\n| # | Timestamp | Data | prev_hash | hash |\n|---|---|---|---|---|\n';
+  currentLog.forEach(r => {
+    const data = JSON.stringify(r.data).replace(/\|/g, '\\|');
+    const prev = r.prev_hash ? r.prev_hash.slice(0,12) + '…' : 'null';
+    const hash = r.hash.slice(0,12) + '…';
+    md += `| ${r.index} | ${r.timestamp} | ${data} | ${prev} | ${hash} |\n`;
+  });
+  navigator.clipboard.writeText(md);
+}
+
+function downloadVerified() {
+  if (!currentLog) return;
+  const blob = new Blob([JSON.stringify(currentLog, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'verified-log.morus';
+  a.click();
+}
+
+// ---- Examples ----
+const VALID_EXAMPLE = [
+  {"index":0,"timestamp":"2026-01-01T00:00:00Z","data":{"event":"genesis"},"prev_hash":null,
+   "hash":"c6dec7cf032a5e53a0832e3c0e8c5991eeb67c52814b0374a4f3037c979e73c4"},
+  {"index":1,"timestamp":"2026-01-01T01:00:00Z","data":{"action":"signed","doc":"contract-001"},
+   "prev_hash":"c6dec7cf032a5e53a0832e3c0e8c5991eeb67c52814b0374a4f3037c979e73c4",
+   "hash":""}
+];
+
+async function loadValidExample() {
+  // Compute hash for record 1 on the fly
+  const r1 = VALID_EXAMPLE[1];
+  r1.hash = await computeHash(r1.index, r1.timestamp, r1.data, r1.prev_hash);
+  document.getElementById('jsonInput').value = JSON.stringify(VALID_EXAMPLE, null, 2);
+  await verify(VALID_EXAMPLE);
+}
+
+function loadTamperedExample() {
+  const tampered = [
+    {"index":0,"timestamp":"2026-01-01T00:00:00Z","data":{"event":"genesis"},"prev_hash":null,
+     "hash":"c6dec7cf032a5e53a0832e3c0e8c5991eeb67c52814b0374a4f3037c979e73c4"},
+    {"index":1,"timestamp":"2026-01-01T01:00:00Z","data":{"action":"TAMPERED","doc":"HACKED"},"prev_hash":"c6dec7cf032a5e53a0832e3c0e8c5991eeb67c52814b0374a4f3037c979e73c4",
+     "hash":"0000000000000000000000000000000000000000000000000000000000000000"}
+  ];
+  document.getElementById('jsonInput').value = JSON.stringify(tampered, null, 2);
+  verify(tampered);
+}
+</script>
+</body>
+</html>

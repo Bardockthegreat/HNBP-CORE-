@@ -1,0 +1,29 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2026-03-10T14:00:00Z",
+    "data": {
+      "actor": "bob+claude-companion",
+      "actor_type": "hybrid",
+      "event": "session-start",
+      "human": "bob",
+      "ai": "claude-companion-v1"
+    },
+    "prev_hash": null,
+    "hash": "__computed__"
+  },
+  {
+    "index": 1,
+    "timestamp": "2026-03-10T14:02:00Z",
+    "data": {
+      "actor": "bob+claude-companion",
+      "event": "decision-made",
+      "decision": "approved-vendor-contract",
+      "human_confirmed": true,
+      "ai_recommendation": "approve",
+      "ai_confidence": 0.97
+    },
+    "prev_hash": "__prev__",
+    "hash": "__computed__"
+  }
+]

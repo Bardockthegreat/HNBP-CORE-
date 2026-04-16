@@ -1,0 +1,17 @@
+{
+  "log": [
+    {
+      "index": 0,
+      "timestamp": "2026-01-10T12:00:00Z",
+      "data": {"actor": "alice", "event": "wallet-init"},
+      "prev_hash": null,
+      "hash": "84c122717d869712b7ecdf0c1b130a254c63c332b04051e9a504cb6be300181f"
+    }
+  ],
+  "anchor": {
+    "txid": "cafebabecafebabecafebabecafebabecafebabecafebabecafebabecafebabe",
+    "op_return": "not-a-valid-hex-hash!!!",
+    "block_height": 882002,
+    "block_time": "2026-01-10T15:00:00Z"
+  }
+}

@@ -1,0 +1,9 @@
+[
+  {
+    "index": 0,
+    "timestamp": "not-a-real-timestamp",
+    "data": {"event": "genesis"},
+    "prev_hash": null,
+    "hash": "invalid-will-fail-timestamp-check"
+  }
+]

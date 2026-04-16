@@ -1,0 +1,40 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2026-03-15T18:00:00Z",
+    "data": {
+      "event": "proposal-created",
+      "proposal_id": "PROP-001",
+      "title": "Add support for Taproot addresses",
+      "author": "dev-alice",
+      "body_hash": "sha256:feedcafe"
+    },
+    "prev_hash": null,
+    "hash": "__computed__"
+  },
+  {
+    "index": 1,
+    "timestamp": "2026-03-16T09:00:00Z",
+    "data": {
+      "event": "vote-cast",
+      "voter": "stakeholder-bob",
+      "vote": "yes",
+      "proposal_id": "PROP-001"
+    },
+    "prev_hash": "__prev__",
+    "hash": "__computed__"
+  },
+  {
+    "index": 2,
+    "timestamp": "2026-03-20T18:00:00Z",
+    "data": {
+      "event": "proposal-passed",
+      "proposal_id": "PROP-001",
+      "yes_votes": 7,
+      "no_votes": 1,
+      "quorum_met": true
+    },
+    "prev_hash": "__prev__",
+    "hash": "__computed__"
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2026-03-01T09:00:00Z",
+    "data": {
+      "actor": "alice",
+      "actor_type": "human",
+      "event": "session-start",
+      "device": "macbook-pro"
+    },
+    "prev_hash": null,
+    "hash": "__computed__"
+  },
+  {
+    "index": 1,
+    "timestamp": "2026-03-01T09:05:00Z",
+    "data": {
+      "actor": "alice",
+      "event": "document-signed",
+      "doc_id": "contract-2026-Q1-001",
+      "doc_hash": "abc123def456"
+    },
+    "prev_hash": "__prev__",
+    "hash": "__computed__"
+  }
+]

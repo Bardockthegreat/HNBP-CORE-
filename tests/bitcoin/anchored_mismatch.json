@@ -1,0 +1,24 @@
+{
+  "log": [
+    {
+      "index": 0,
+      "timestamp": "2026-01-10T12:00:00Z",
+      "data": {"actor": "alice", "event": "wallet-init"},
+      "prev_hash": null,
+      "hash": "84c122717d869712b7ecdf0c1b130a254c63c332b04051e9a504cb6be300181f"
+    },
+    {
+      "index": 1,
+      "timestamp": "2026-01-10T12:30:00Z",
+      "data": {"event": "signed-tx", "txid": "abc123"},
+      "prev_hash": "84c122717d869712b7ecdf0c1b130a254c63c332b04051e9a504cb6be300181f",
+      "hash": "4424b82044a8c3a264cdb3bcb8fb968326772dc132c3ac82c7ed9b8b62962cf0"
+    }
+  ],
+  "anchor": {
+    "txid": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+    "op_return": "0000000000000000000000000000000000000000000000000000000000000000",
+    "block_height": 882001,
+    "block_time": "2026-01-10T14:00:00Z"
+  }
+}

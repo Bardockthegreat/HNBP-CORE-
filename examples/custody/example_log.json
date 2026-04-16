@@ -1,0 +1,27 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2026-01-05T12:00:00Z",
+    "data": {
+      "event": "custody-established",
+      "custodian": "cold-storage-vault-A",
+      "asset": "BTC",
+      "amount": 100.0,
+      "client": "fund-xyz"
+    },
+    "prev_hash": null,
+    "hash": "__computed__"
+  },
+  {
+    "index": 1,
+    "timestamp": "2026-02-01T09:00:00Z",
+    "data": {
+      "event": "proof-of-reserves",
+      "address": "bc1q...",
+      "balance_btc": 100.0,
+      "signed_by": "cold-storage-vault-A"
+    },
+    "prev_hash": "__prev__",
+    "hash": "__computed__"
+  }
+]

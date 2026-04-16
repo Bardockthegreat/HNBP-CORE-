@@ -1,0 +1,16 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2026-03-01T09:00:00Z",
+    "data": {"metadata": {"tags": ["finance", "quarterly"], "version": "1.0"}, "score": 99, "type": "audit"},
+    "prev_hash": null,
+    "hash": "baf9c1c58c4f27a93d084eee2e3324b7d5aae7ec3dc734f653b123747f97377d"
+  },
+  {
+    "index": 1,
+    "timestamp": "2026-03-01T10:00:00Z",
+    "data": {"details": {"code": "F-001", "notes": "minor discrepancy"}, "severity": "low", "type": "finding"},
+    "prev_hash": "baf9c1c58c4f27a93d084eee2e3324b7d5aae7ec3dc734f653b123747f97377d",
+    "hash": "2be68375aeb40adf028a6c373002bc39e47c3418068175e16bbd30e33ce5b762"
+  }
+]

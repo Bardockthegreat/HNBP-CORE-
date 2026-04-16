@@ -1,0 +1,9 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "data": {"event": "genesis"},
+    "prev_hash": null,
+    "hash": "c6dec7cf032a5e53a0832e3c0e8c5991eeb67c52814b0374a4f3037c979e73c4"
+  }
+]

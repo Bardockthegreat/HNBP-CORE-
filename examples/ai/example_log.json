@@ -1,0 +1,40 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2026-04-01T08:00:00Z",
+    "data": {
+      "actor": "gpt-agent-v2",
+      "actor_type": "ai",
+      "event": "agent-init",
+      "task": "summarize-legal-docs",
+      "version": "2.1.0"
+    },
+    "prev_hash": null,
+    "hash": "__computed__"
+  },
+  {
+    "index": 1,
+    "timestamp": "2026-04-01T08:01:00Z",
+    "data": {
+      "actor": "gpt-agent-v2",
+      "event": "tool-call",
+      "tool": "read_file",
+      "args": {"path": "docs/contract.pdf"},
+      "result_hash": "sha256:deadbeef"
+    },
+    "prev_hash": "__prev__",
+    "hash": "__computed__"
+  },
+  {
+    "index": 2,
+    "timestamp": "2026-04-01T08:02:30Z",
+    "data": {
+      "actor": "gpt-agent-v2",
+      "event": "output-produced",
+      "output_type": "summary",
+      "output_hash": "sha256:cafebabe"
+    },
+    "prev_hash": "__prev__",
+    "hash": "__computed__"
+  }
+]

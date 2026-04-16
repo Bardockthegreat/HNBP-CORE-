@@ -1,0 +1,3 @@
+# HNBP-CORE Spec Checksums
+# TODO: Fill with SHA-256 hashes of HNBP-CORE-v1.0.0.md (.md and .txt forms)
+# Run: sha256sum spec/HNBP-CORE-v1.0.0.md > spec/spec_hashes.txt

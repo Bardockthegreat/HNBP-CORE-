@@ -1,0 +1,23 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "data": {"action": "init", "actor": "human"},
+    "prev_hash": null,
+    "hash": "2eefa4bacde18827909176c829ebf01c4d36236cc3deaf7cf577ea3d4de950ce"
+  },
+  {
+    "index": 1,
+    "timestamp": "2026-01-01T01:00:00Z",
+    "data": {"action": "signed", "doc": "contract-001"},
+    "prev_hash": "2eefa4bacde18827909176c829ebf01c4d36236cc3deaf7cf577ea3d4de950ce",
+    "hash": "5a84010794b10ddf18c92583bcd2b3ac1b76bf47c80b9d108744ad481194d92f"
+  },
+  {
+    "index": 2,
+    "timestamp": "2026-01-01T02:00:00Z",
+    "data": {"action": "confirmed", "by": "counterparty"},
+    "prev_hash": "5a84010794b10ddf18c92583bcd2b3ac1b76bf47c80b9d108744ad481194d92f",
+    "hash": "2d23414e3a74a4b75fe5df7cc09a22790f7583838a07838d10038338695c8f95"
+  }
+]
