@@ -1,6 +1,6 @@
 # HNBP-CORE
 
-**A universal, tamper-evident, append-only witness protocol for any actor (human, AI, or system), with optional Bitcoin anchoring.**
+**A minimal, tamper-evident, append-only witness log for any actor (human, AI, or system), with optional Bitcoin anchoring.**
 
 [![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue)](LICENSE)
 
@@ -10,7 +10,7 @@
 
 Modern systems lack verifiable memory. HNBP-CORE provides a cryptographic witness log — a hash chain where every record commits to all previous records. Any modification is instantly detectable. With Bitcoin anchoring, the log's existence at a specific moment in time becomes globally provable.
 
-**Bitcoin has machine consensus. HNBP-CORE provides actor-layer consensus.**
+**Bitcoin timestamps the log's existence. HNBP-CORE proves it hasn't changed.**
 
 ---
 
