@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2113.65">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Helvetica Light'}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Helvetica Light'; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1"># HNBP-CORE v1.0.0 — Frozen Specification</p>
+<p class="p2"><br></p>
+<p class="p1">**Status:** FROZEN — this document does not change. <span class="Apple-converted-space"> </span></p>
+<p class="p1">**Date:** 2026-04-15 <span class="Apple-converted-space"> </span></p>
+<p class="p1">**Format:** `.morus` (JSON array)</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## 1. Scope</p>
+<p class="p2"><br></p>
+<p class="p1">HNBP-CORE defines a universal, tamper-evident, append-only witness log for any actor — human, AI, or system — with optional anchoring to the Bitcoin blockchain for global immutability.</p>
+<p class="p2"><br></p>
+<p class="p1">This specification covers:</p>
+<p class="p1">- Record structure</p>
+<p class="p1">- Hashing rule</p>
+<p class="p1">- Log validity conditions</p>
+<p class="p1">- Bitcoin anchoring procedure</p>
+<p class="p1">- Actor model</p>
+<p class="p1">- Determinism requirements</p>
+<p class="p1">- Versioning policy</p>
+<p class="p1">- Checksums</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## 2. Record Structure</p>
+<p class="p2"><br></p>
+<p class="p1">Each record in a HNBP log is a JSON object with exactly these fields:</p>
+<p class="p2"><br></p>
+<p class="p1">| Field | Type | Description |</p>
+<p class="p1">|---|---|---|</p>
+<p class="p1">| `index` | integer | Position in the log, starting at 0, strictly sequential |</p>
+<p class="p1">| `timestamp` | string | ISO 8601 datetime string (e.g. `"2026-04-15T07:06:00Z"`) |</p>
+<p class="p1">| `data` | any | Any JSON-serializable value (object, string, number, array, etc.) |</p>
+<p class="p1">| `prev_hash` | string or null | Hash of the previous record; `null` only for `index 0` |</p>
+<p class="p1">| `hash` | string | SHA-256 hex digest of this record's canonical input |</p>
+<p class="p2"><br></p>
+<p class="p1">A log file is a JSON array of records:</p>
+<p class="p2"><br></p>
+<p class="p1">```json</p>
+<p class="p1">[</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"index": 0,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"timestamp": "2026-04-15T07:06:00Z",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"data": { "event": "genesis" },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"prev_hash": null,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"hash": "&lt;sha256-hex&gt;"</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"index": 1,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"timestamp": "2026-04-15T08:00:00Z",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"data": { "event": "signed", "doc": "contract-001" },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"prev_hash": "&lt;hash-of-record-0&gt;",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>"hash": "&lt;sha256-hex&gt;"</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1">]</p>
+<p class="p1">```</p>
+<p class="p2"><br></p>
+<p class="p1">Log files use the `.morus` extension (e.g., `mylog.morus`). The content is valid JSON.</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## 3. Hashing</p>
+<p class="p2"><br></p>
+<p class="p1">The hash for each record is computed as:</p>
+<p class="p2"><br></p>
+<p class="p1">```</p>
+<p class="p1">hash = SHA256(</p>
+<p class="p1"><span class="Apple-converted-space">    </span>String(index) +</p>
+<p class="p1"><span class="Apple-converted-space">    </span>String(timestamp) +</p>
+<p class="p1"><span class="Apple-converted-space">    </span>JSON.stringify(data, canonical) +</p>
+<p class="p1"><span class="Apple-converted-space">    </span>String(prev_hash)</p>
+<p class="p1">)</p>
+<p class="p1">```</p>
+<p class="p2"><br></p>
+<p class="p1">Rules:</p>
+<p class="p1">- All components are converted to strings before concatenation.</p>
+<p class="p1">- `index` → `"0"`, `"1"`, etc.</p>
+<p class="p1">- `timestamp` → used as-is (the stored string value).</p>
+<p class="p1">- `data` → **canonical JSON**: keys sorted alphabetically, no extra whitespace. Specifically: `JSON.stringify` with sorted keys and no spaces.</p>
+<p class="p1">- `prev_hash` → the stored hex string, **or the literal string `"null"` for `index 0`** (not the JSON null value — the four-character string `null`).</p>
+<p class="p1">- The SHA-256 is computed over the UTF-8 encoding of the concatenated string.</p>
+<p class="p1">- Output is lowercase hex.</p>
+<p class="p2"><br></p>
+<p class="p1">### Canonical JSON for `data`</p>
+<p class="p2"><br></p>
+<p class="p1">For determinism across implementations, `data` MUST be serialized with:</p>
+<p class="p1">- Keys sorted alphabetically at every level (recursive).</p>
+<p class="p1">- No whitespace (no spaces or newlines).</p>
+<p class="p1">- Equivalent to Python's `json.dumps(data, sort_keys=True, separators=(',', ':'))`.</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## 4. Log Validity</p>
+<p class="p2"><br></p>
+<p class="p1">A log is valid if and only if ALL of the following hold:</p>
+<p class="p2"><br></p>
+<p class="p1">1. **Non-empty**: The log is a JSON array with at least one record.</p>
+<p class="p1">2. **Sequential indices**: `records[i].index == i` for all `i`.</p>
+<p class="p1">3. **Genesis prev_hash**: `records[0].prev_hash === null` (JSON null).</p>
+<p class="p1">4. **Chain linkage**: For all `i &gt; 0`, `records[i].prev_hash === records[i-1].hash`.</p>
+<p class="p1">5. **Hash integrity**: For every record, the stored `hash` matches the recomputed hash per Section 3.</p>
+<p class="p1">6. **Valid timestamps**: Every `timestamp` is a valid ISO 8601 string.</p>
+<p class="p2"><br></p>
+<p class="p1">Any violation of any rule means the log is invalid.</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## 5. Bitcoin Anchoring</p>
+<p class="p2"><br></p>
+<p class="p1">### 5.1 Purpose</p>
+<p class="p2"><br></p>
+<p class="p1">Anchoring the HEAD hash to Bitcoin provides:</p>
+<p class="p1">- A globally verifiable timestamp (block height)</p>
+<p class="p1">- Immutability backed by Bitcoin's proof-of-work</p>
+<p class="p1">- Censorship resistance</p>
+<p class="p1">- Independent auditability without trusting any server</p>
+<p class="p2"><br></p>
+<p class="p1">### 5.2 Anchoring Procedure</p>
+<p class="p2"><br></p>
+<p class="p1">1. Compute the current HEAD hash: the `hash` field of the last record in the log.</p>
+<p class="p1">2. Create a Bitcoin transaction with an `OP_RETURN` output containing the HEAD hash as raw bytes (32 bytes, decoded from hex).</p>
+<p class="p1">3. Broadcast the transaction via any Bitcoin wallet or node.</p>
+<p class="p1">4. Record the resulting `txid` for later verification.</p>
+<p class="p2"><br></p>
+<p class="p1">### 5.3 Verification Procedure</p>
+<p class="p2"><br></p>
+<p class="p1">Given a `.morus` log and a Bitcoin `txid`:</p>
+<p class="p2"><br></p>
+<p class="p1">1. Validate the log per Section 4.</p>
+<p class="p1">2. Compute HEAD hash = `records[last].hash`.</p>
+<p class="p1">3. Retrieve the transaction by `txid`.</p>
+<p class="p1">4. Extract the `OP_RETURN` payload (hex).</p>
+<p class="p1">5. Compare: if `OP_RETURN payload == HEAD hash` → the log is provably unmodified since that Bitcoin block.</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## 6. Actor Model</p>
+<p class="p2"><br></p>
+<p class="p1">A **Node** is any actor that produces actions, decisions, or state transitions requiring a verifiable record.</p>
+<p class="p2"><br></p>
+<p class="p1">| Actor Type | Description |</p>
+<p class="p1">|---|---|</p>
+<p class="p1">| **Human Node** | A person using a device, wallet, or companion AI |</p>
+<p class="p1">| **AI Node** | Any autonomous or semi-autonomous agent (LLM, workflow agent, swarm member, etc.) |</p>
+<p class="p1">| **System Node** | Any non-AI system: server, IoT device, daemon, pipeline, script |</p>
+<p class="p1">| **Hybrid Node** | A human + AI pair acting together |</p>
+<p class="p2"><br></p>
+<p class="p1">HNBP-CORE is actor-agnostic. The `data` field carries actor-specific semantics. The protocol does not care who or what is writing records — only that the chain is intact.</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## 7. Determinism</p>
+<p class="p2"><br></p>
+<p class="p1">All implementations MUST be deterministic:</p>
+<p class="p2"><br></p>
+<p class="p1">- The same record inputs MUST always produce the same hash.</p>
+<p class="p1">- Canonical JSON serialization (sorted keys, no whitespace) is mandatory.</p>
+<p class="p1">- No implementation-specific floating point, locale, or encoding differences are permitted.</p>
+<p class="p1">- SHA-256 is the only permitted hash function.</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## 8. Versioning</p>
+<p class="p2"><br></p>
+<p class="p1">- This spec is **HNBP-CORE v1.0.0** and is frozen.</p>
+<p class="p1">- The format does not change.</p>
+<p class="p1">- Implementations may be updated; the format may not.</p>
+<p class="p1">- Future spec versions (if any) will be assigned new version numbers and will not alter v1.0.0 behavior.</p>
+<p class="p1">- Any implementation claiming "HNBP-CORE compatible" MUST pass the v1.0.0 test suite.</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">## 9. Checksums</p>
+<p class="p2"><br></p>
+<p class="p1">SHA-256 checksums of this specification file are stored in `/spec/spec_hashes.txt` for tamper-evidence of the spec itself.</p>
+<p class="p2"><br></p>
+<p class="p1">---</p>
+<p class="p2"><br></p>
+<p class="p1">*End of HNBP-CORE v1.0.0 Frozen Specification.*</p>
+</body>
+</html>

@@ -191,7 +191,7 @@ HNBP-CORE v1.0.0 is **frozen**. The format does not change. See [GOVERNANCE.md](
 
 **PolyForm Noncommercial License 1.0.0** — noncommercial use is allowed.  
 Commercial use requires a separate commercial license from the author.  
-The author retains all commercial rights.
+© 2026 BobbiéB (github.com/Bardockthegreat). All commercial rights reserved.
 
 See [LICENSE](LICENSE) and [GOVERNANCE.md](GOVERNANCE.md) for details.
 
